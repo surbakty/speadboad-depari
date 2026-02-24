@@ -28,3 +28,20 @@ Route::post('/logout', function () {
 })->name('logout');
 
 Route::get('/tiket-saya', [App\Http\Controllers\BookingController::class, 'myHistory'])->name('tiket.saya')->middleware('auth');
+
+Route::get('/tiket/detail/{kode_tiket}', [BookingController::class, 'detail'])->name('tiket.detail')->middleware('auth');
+
+// Route untuk user upload bukti bayar
+Route::post('/tiket/upload', [BookingController::class, 'uploadBukti'])->name('tiket.upload')->middleware('auth');
+
+// Route untuk melihat data transaksi
+Route::get('/admin/transaksi', [App\Http\Controllers\AdminController::class, 'dataTransaksi'])->name('admin.transaksi');
+
+// Route untuk tombol konfirmasi
+Route::post('/admin/konfirmasi/{id}', [App\Http\Controllers\AdminController::class, 'konfirmasiLunas'])->name('admin.konfirmasi');
+
+// Route untuk Dashboard
+Route::get('/admin/dashboard', [AdminController::class, 'index'])->name('admin.dashboard');
+
+// Route untuk Halaman Transaksi
+Route::get('/admin/transaksi', [AdminController::class, 'dataTransaksi'])->name('admin.transaksi');

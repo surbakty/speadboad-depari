@@ -14,4 +14,20 @@ class AdminController extends Controller
         // Mengirim data ke folder admin file dashboard
         return view('admin.dashboard', compact('transactions'));
     }
+
+    public function dataTransaksi()
+    {
+        // Ambil semua transaksi, urutkan yang terbaru di atas
+        $transactions = \App\Models\Transaction::latest()->get();
+        return view('admin.transactions', compact('transactions'));
+    }
+
+    public function konfirmasiLunas($id)
+    {
+        $transaction = \App\Models\Transaction::findOrFail($id);
+        $transaction->status = 'Lunas';
+        $transaction->save();
+
+        return back()->with('success', 'Pembayaran Berhasil Dikonfirmasi!');
+    }
 }

@@ -224,7 +224,7 @@
                         </div>
                         <div>
                             <label class="block text-sm font-semibold mb-1">Tanggal Kunjungan</label>
-                            <input type="date" name="tgl_kunjungan" required
+                            <input type="date" name="tgl_kunjungan" id="tgl_kunjungan" required
                                 class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-teal-500 outline-none">
                         </div>
                         <div>
@@ -243,10 +243,10 @@
                         </div>
                     </div>
 
-                        <button type="submit"
-                            class="w-full bg-[#117A65] text-white font-bold py-3 rounded-lg hover:bg-teal-700 transition flex justify-center items-center">
-                            Booking Sekarang
-                        </button>
+                    <button type="submit"
+                        class="w-full bg-[#117A65] text-white font-bold py-3 rounded-lg hover:bg-teal-700 transition flex justify-center items-center">
+                        Booking Sekarang
+                    </button>
                 </form>
             </div>
         </div>
@@ -255,6 +255,17 @@
     <footer class="bg-gray-900 text-gray-400 py-8 text-center">
         <p>&copy; 2026 Speed Boat Depari - Lau Kawar</p>
     </footer>
+
+    <script>
+        // Ambil input tanggal berdasarkan ID
+        const dateInput = document.getElementById('tgl_kunjungan');
+
+        // Dapatkan tanggal hari ini dalam format YYYY-MM-DD
+        const today = new Date().toISOString().split('T')[0];
+
+        // Set atribut 'min' agar tanggal sebelum hari ini tidak bisa dipilih
+        dateInput.setAttribute('min', today);
+    </script>
 
 </body>
 

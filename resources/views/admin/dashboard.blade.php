@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard | Depari Boat</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap');
@@ -14,17 +15,14 @@
             font-family: 'Montserrat', sans-serif;
         }
 
-        /* Warna Identitas Website Kamu */
         .bg-primary {
             background-color: #1B4F72;
         }
 
-        /* Biru Utama */
         .bg-secondary {
             background-color: #117A65;
         }
 
-        /* Teal */
         .text-primary {
             color: #1B4F72;
         }
@@ -48,11 +46,13 @@
         </div>
 
         <nav class="p-4 mt-4 space-y-2">
-            <a href="#" class="flex items-center space-x-3 p-4 bg-secondary rounded-xl shadow-lg transition">
+            <a href="{{ route('admin.dashboard') }}"
+                class="flex items-center space-x-3 p-4 {{ request()->routeIs('admin.dashboard') ? 'bg-secondary' : 'hover:bg-white/10' }} rounded-xl shadow-lg transition">
                 <i class="fas fa-chart-pie w-5"></i>
                 <span class="font-semibold">Dashboard</span>
             </a>
-            <a href="#" class="flex items-center space-x-3 p-4 hover:bg-white/10 rounded-xl transition text-white/70">
+            <a href="{{ route('admin.transaksi') }}"
+                class="flex items-center space-x-3 p-4 {{ request()->routeIs('admin.transaksi') ? 'bg-secondary' : 'hover:bg-white/10 text-white/70' }} rounded-xl transition">
                 <i class="fas fa-history w-5"></i>
                 <span>Data Transaksi</span>
             </a>
@@ -101,8 +101,9 @@
                     <div class="flex justify-between items-start">
                         <div>
                             <p class="text-sm text-gray-400 font-bold uppercase mb-1">Estimasi Omzet</p>
-                            <h3 class="text-3xl font-black text-secondary">Rp
-                                {{ number_format($transactions->count() * 150000, 0, ',', '.') }}
+                            <h3 class="text-3xl font-black text-secondary">
+                                Rp
+                                {{ number_format($transactions->where('status', 'Lunas')->sum('total_harga'), 0, ',', '.') }}
                             </h3>
                         </div>
                         <div class="p-3 bg-teal-50 text-secondary rounded-lg"><i class="fas fa-wallet"></i></div>
@@ -120,34 +121,20 @@
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm overflow-hidden">
+                <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm overflow-hidden border">
                     <div class="p-6 bg-primary text-white flex justify-between items-center">
-                        <h3 class="font-bold uppercase tracking-widest text-sm italic">Log Pesanan Tiket</h3>
-                        <i class="fas fa-list-ul"></i>
+                        <h3 class="font-bold uppercase tracking-widest text-sm italic">Tren Kunjungan Wisata</h3>
+
+                        <select id="filterChart"
+                            class="bg-white/10 border border-white/20 text-white text-xs rounded-lg p-2 outline-none cursor-pointer focus:bg-primary">
+                            <option value="all" class="text-black">Keseluruhan</option>
+                            <option value="month" class="text-black">Bulan Ini</option>
+                            <option value="year" class="text-black">Tahun Ini</option>
+                        </select>
                     </div>
-                    <table class="w-full text-left">
-                        <thead class="bg-gray-50 text-gray-400 text-[10px] uppercase font-bold border-b">
-                            <tr>
-                                <th class="p-4">Customer</th>
-                                <th class="p-4">Kunjungan</th>
-                                <th class="p-4 text-center">Pax</th>
-                                <th class="p-4">Status</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-gray-100">
-                            @foreach($transactions as $item)
-                                <tr class="hover:bg-teal-50/50 transition">
-                                    <td class="p-4 font-bold text-primary">{{ $item->nama_pemesan }}</td>
-                                    <td class="p-4 text-sm">{{ $item->tgl_kunjungan }}</td>
-                                    <td class="p-4 text-center font-bold text-secondary">{{ $item->jumlah_orang }}</td>
-                                    <td class="p-4">
-                                        <span
-                                            class="bg-secondary/10 text-secondary px-3 py-1 rounded-lg text-[10px] font-black uppercase">Confirmed</span>
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
+                    <div class="p-6">
+                        <canvas id="visitChart" style="min-height: 320px; width: 100%;"></canvas>
+                    </div>
                 </div>
 
                 <div class="bg-secondary p-8 rounded-3xl text-white shadow-xl flex flex-col justify-between">
@@ -178,6 +165,78 @@
             </div>
         </div>
     </main>
+
+    <script>
+        const ctx = document.getElementById('visitChart').getContext('2d');
+
+        // 1. Ambil data asli dari Laravel ke JavaScript
+        const allData = [
+            @foreach($transactions->sortBy('tgl_kunjungan') as $item)
+                {
+                    tgl: "{{ $item->tgl_kunjungan }}",
+                    label: "{{ \Carbon\Carbon::parse($item->tgl_kunjungan)->format('d M') }}",
+                    bulan: "{{ \Carbon\Carbon::parse($item->tgl_kunjungan)->format('m') }}",
+                    tahun: "{{ \Carbon\Carbon::parse($item->tgl_kunjungan)->format('Y') }}",
+                    pax: {{ $item->jumlah_orang }}
+                },
+            @endforeach
+        ];
+
+        const now = new Date();
+        const currentMonth = String(now.getMonth() + 1).padStart(2, '0');
+        const currentYear = String(now.getFullYear());
+
+        // 2. Inisialisasi Grafik Awal (Semua Data)
+        let visitChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: allData.map(d => d.label),
+                datasets: [{
+                    label: 'Jumlah Orang',
+                    data: allData.map(d => d.pax),
+                    borderColor: '#117A65',
+                    backgroundColor: 'rgba(17, 122, 101, 0.1)',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 4,
+                    pointBackgroundColor: '#1B4F72'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { stepSize: 1 }
+                    }
+                },
+                plugins: {
+                    legend: { display: false }
+                }
+            }
+        });
+
+        // 3. Fungsi Filter saat Dropdown berubah
+        document.getElementById('filterChart').addEventListener('change', function () {
+            const val = this.value;
+            let filtered = [];
+
+            if (val === 'month') {
+                filtered = allData.filter(d => d.bulan === currentMonth && d.tahun === currentYear);
+            } else if (val === 'year') {
+                filtered = allData.filter(d => d.tahun === currentYear);
+            } else {
+                filtered = allData; // Keseluruhan
+            }
+
+            // Update Label dan Data di Chart
+            visitChart.data.labels = filtered.map(d => d.label);
+            visitChart.data.datasets[0].data = filtered.map(d => d.pax);
+            visitChart.update(); // Render ulang grafik dengan animasi
+        });
+    </script>
 
 </body>
 
