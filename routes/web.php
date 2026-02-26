@@ -45,3 +45,20 @@ Route::get('/admin/dashboard', [AdminController::class, 'index'])->name('admin.d
 
 // Route untuk Halaman Transaksi
 Route::get('/admin/transaksi', [AdminController::class, 'dataTransaksi'])->name('admin.transaksi');
+
+// Hanya bisa diakses jika Login (auth) DAN Role-nya Admin (admin)
+Route::middleware(['auth', 'admin'])->group(function () {
+    
+    // Halaman Utama Admin
+    Route::get('/admin/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
+    
+    // Halaman Data Transaksi (Sesuaikan nama methodnya)
+    Route::get('/admin/transaksi', [AdminController::class, 'dataTransaksi'])->name('admin.transaksi');
+    
+    // Halaman Manajemen User
+    Route::get('/admin/users', [AdminController::class, 'users'])->name('admin.users');
+    
+    // Aksi Update Role
+    Route::post('/admin/users/{user}/update-role', [AdminController::class, 'updateRole'])->name('admin.users.updateRole');
+    
+});

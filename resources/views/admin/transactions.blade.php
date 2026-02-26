@@ -46,20 +46,29 @@
                 <i class="fas fa-chart-pie w-5"></i>
                 <span>Dashboard</span>
             </a>
+
             <a href="{{ route('admin.transaksi') }}"
                 class="flex items-center space-x-3 p-4 bg-secondary rounded-xl shadow-lg transition">
                 <i class="fas fa-history w-5"></i>
                 <span class="font-semibold">Data Transaksi</span>
             </a>
+
+            <a href="{{ route('admin.users') }}"
+                class="flex items-center space-x-3 p-4 hover:bg-white/10 rounded-xl transition text-white/70">
+                <i class="fas fa-user-shield w-5"></i>
+                <span>Manajemen User</span>
+            </a>
+
             <a href="#" class="flex items-center space-x-3 p-4 hover:bg-white/10 rounded-xl transition text-white/70">
                 <i class="fas fa-calculator w-5"></i>
                 <span>Analisis Holt-Winters</span>
             </a>
+
             <div class="pt-10">
                 <form action="{{ route('logout') }}" method="POST">
                     @csrf
                     <button
-                        class="w-full flex items-center space-x-3 p-4 text-red-300 hover:bg-red-500/10 rounded-xl transition">
+                        class="w-full flex items-center space-x-3 p-4 text-red-300 hover:bg-red-500/10 rounded-xl transition text-left">
                         <i class="fas fa-power-off w-5"></i>
                         <span>Keluar Sistem</span>
                     </button>
@@ -100,7 +109,8 @@
                                                 <td class="p-4">
                                                     <p class="font-bold text-primary">{{ $t->nama_pemesan }}</p>
                                                     <p class="text-[10px] text-gray-400">
-                                                        {{ \Carbon\Carbon::parse($t->tgl_kunjungan)->format('d M Y') }}</p>
+                                                        {{ \Carbon\Carbon::parse($t->tgl_kunjungan)->format('d M Y') }}
+                                                    </p>
                                                 </td>
                                                 <td class="p-4">
                                                     <span class="font-mono font-bold text-secondary bg-teal-50 px-2 py-1 rounded text-sm">
@@ -108,7 +118,8 @@
                                                     </span>
                                                 </td>
                                                 <td class="p-4 font-bold text-gray-700 italic">Rp
-                                                    {{ number_format($t->total_harga, 0, ',', '.') }}</td>
+                                                    {{ number_format($t->total_harga, 0, ',', '.') }}
+                                                </td>
                                                 <td class="p-4">
                                                     @if($t->bukti_bayar)
                                                         <a href="{{ asset('storage/' . $t->bukti_bayar) }}" target="_blank"
@@ -122,7 +133,7 @@
                                                 <td class="p-4">
                                                     <span
                                                         class="px-3 py-1 rounded-full text-[9px] font-black uppercase shadow-sm
-                                                        {{ $t->status == 'Lunas' ? 'bg-green-100 text-green-700' :
+                                                                            {{ $t->status == 'Lunas' ? 'bg-green-100 text-green-700' :
                             ($t->status == 'Pending' ? 'bg-amber-100 text-amber-700' : 'bg-blue-100 text-blue-700') }}">
                                                         {{ $t->status }}
                                                     </span>

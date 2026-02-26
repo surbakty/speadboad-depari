@@ -30,10 +30,6 @@
         .text-secondary {
             color: #117A65;
         }
-
-        .border-secondary {
-            border-color: #117A65;
-        }
     </style>
 </head>
 
@@ -52,9 +48,14 @@
                 <span class="font-semibold">Dashboard</span>
             </a>
             <a href="{{ route('admin.transaksi') }}"
-                class="flex items-center space-x-3 p-4 {{ request()->routeIs('admin.transaksi') ? 'bg-secondary' : 'hover:bg-white/10 text-white/70' }} rounded-xl transition">
+                class="flex items-center space-x-3 p-4 {{ request()->routeIs('admin.transaksi') ? 'bg-secondary' : 'hover:bg-white/10 text-white/70' }} rounded-xl transition text-white/70">
                 <i class="fas fa-history w-5"></i>
                 <span>Data Transaksi</span>
+            </a>
+            <a href="{{ route('admin.users') }}"
+                class="flex items-center space-x-3 p-4 {{ request()->routeIs('admin.users') ? 'bg-secondary' : 'hover:bg-white/10 text-white/70' }} rounded-xl transition text-white/70">
+                <i class="fas fa-user-shield w-5"></i>
+                <span>Manajemen User</span>
             </a>
             <a href="#" class="flex items-center space-x-3 p-4 hover:bg-white/10 rounded-xl transition text-white/70">
                 <i class="fas fa-calculator w-5"></i>
@@ -79,7 +80,7 @@
             <div class="flex items-center space-x-4">
                 <div class="text-right border-r pr-4 hidden md:block">
                     <p class="text-xs text-gray-400">Status Login</p>
-                    <p class="text-sm font-bold text-secondary">{{ Auth::user()->name ?? 'Administrator' }}</p>
+                    <p class="text-sm font-bold text-secondary">{{ Auth::user()->name }}</p>
                 </div>
                 <img src="https://ui-avatars.com/api/?name={{ Auth::user()->name }}&background=1B4F72&color=fff"
                     class="w-10 h-10 rounded-full border-2 border-secondary">
@@ -89,78 +90,51 @@
         <div class="p-8">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
                 <div class="bg-white p-6 rounded-2xl shadow-sm border-b-4 border-primary">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <p class="text-sm text-gray-400 font-bold uppercase mb-1">Total Booking</p>
-                            <h3 class="text-3xl font-black text-primary">{{ $transactions->count() }}</h3>
-                        </div>
-                        <div class="p-3 bg-blue-50 text-primary rounded-lg italic font-bold">LIVE</div>
-                    </div>
+                    <p class="text-sm text-gray-400 font-bold uppercase mb-1">Total Booking</p>
+                    <h3 class="text-3xl font-black text-primary">{{ $transactions->count() }}</h3>
                 </div>
                 <div class="bg-white p-6 rounded-2xl shadow-sm border-b-4 border-secondary">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <p class="text-sm text-gray-400 font-bold uppercase mb-1">Estimasi Omzet</p>
-                            <h3 class="text-3xl font-black text-secondary">
-                                Rp
-                                {{ number_format($transactions->where('status', 'Lunas')->sum('total_harga'), 0, ',', '.') }}
-                            </h3>
-                        </div>
-                        <div class="p-3 bg-teal-50 text-secondary rounded-lg"><i class="fas fa-wallet"></i></div>
-                    </div>
+                    <p class="text-sm text-gray-400 font-bold uppercase mb-1">Estimasi Omzet</p>
+                    <h3 class="text-3xl font-black text-secondary">
+                        Rp {{ number_format($transactions->where('status', 'Lunas')->sum('total_harga'), 0, ',', '.') }}
+                    </h3>
                 </div>
                 <div class="bg-white p-6 rounded-2xl shadow-sm border-b-4 border-yellow-500">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <p class="text-sm text-gray-400 font-bold uppercase mb-1">Prediksi (Holt-Winters)</p>
-                            <h3 class="text-3xl font-black text-yellow-600">Pending</h3>
-                        </div>
-                        <div class="p-3 bg-yellow-50 text-yellow-600 rounded-lg"><i class="fas fa-brain"></i></div>
-                    </div>
+                    <p class="text-sm text-gray-400 font-bold uppercase mb-1">Prediksi</p>
+                    <h3 class="text-xl font-black text-yellow-600 italic">Menunggu Analisis...</h3>
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm overflow-hidden border">
-                    <div class="p-6 bg-primary text-white flex justify-between items-center">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch h-[450px]">
+                <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm overflow-hidden border flex flex-col h-full">
+                    <div class="p-5 bg-primary text-white flex justify-between items-center h-16">
                         <h3 class="font-bold uppercase tracking-widest text-sm italic">Tren Kunjungan Wisata</h3>
-
                         <select id="filterChart"
-                            class="bg-white/10 border border-white/20 text-white text-xs rounded-lg p-2 outline-none cursor-pointer focus:bg-primary">
+                            class="bg-white/10 border border-white/20 text-white text-xs rounded-lg p-2 outline-none">
                             <option value="all" class="text-black">Keseluruhan</option>
-                            <option value="month" class="text-black">Bulan Ini</option>
-                            <option value="year" class="text-black">Tahun Ini</option>
                         </select>
                     </div>
-                    <div class="p-6">
-                        <canvas id="visitChart" style="min-height: 320px; width: 100%;"></canvas>
+                    <div class="p-6 flex-1 relative min-h-0">
+                        <canvas id="visitChart" class="w-full h-full"></canvas>
                     </div>
                 </div>
 
-                <div class="bg-secondary p-8 rounded-3xl text-white shadow-xl flex flex-col justify-between">
+                <div class="bg-secondary p-8 rounded-3xl text-white shadow-xl flex flex-col justify-between h-full">
                     <div>
                         <h3 class="text-xl font-bold mb-4 italic underline decoration-teal-300">Quick Analysis</h3>
                         <p class="text-sm text-teal-100 leading-relaxed">
-                            Data ini akan diproses menggunakan metode <strong>Triple Exponential Smoothing</strong>
-                            untuk menentukan tren kunjungan wisata Lau Kawar pada periode berikutnya.
+                            Data diproses menggunakan metode <strong>Holt-Winters</strong> untuk menentukan tren
+                            kunjungan secara akurat berdasarkan data historis.
                         </p>
-
-                        <div class="mt-8 space-y-4">
-                            <div class="flex justify-between text-sm border-b border-white/20 pb-2">
-                                <span>Total Record:</span>
-                                <span class="font-bold">{{ $transactions->count() }} Data</span>
-                            </div>
-                            <div class="flex justify-between text-sm border-b border-white/20 pb-2">
-                                <span>Target Prediksi:</span>
-                                <span class="font-bold">Bulan Depan</span>
-                            </div>
-                        </div>
                     </div>
 
-                    <button
-                        class="mt-10 bg-white text-secondary w-full py-3 rounded-xl font-bold hover:bg-teal-50 transition shadow-lg">
-                        Mulai Hitung Prediksi
-                    </button>
+                    <div class="mt-auto">
+                        <p class="text-[10px] uppercase tracking-widest mb-4 opacity-70">Aksi Sistem:</p>
+                        <button
+                            class="bg-white text-secondary w-full py-4 rounded-xl font-black hover:bg-teal-50 transition shadow-lg uppercase tracking-tight">
+                            Mulai Hitung Prediksi
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -168,25 +142,15 @@
 
     <script>
         const ctx = document.getElementById('visitChart').getContext('2d');
-
-        // 1. Ambil data asli dari Laravel ke JavaScript
         const allData = [
             @foreach($transactions->sortBy('tgl_kunjungan') as $item)
                 {
-                    tgl: "{{ $item->tgl_kunjungan }}",
-                    label: "{{ \Carbon\Carbon::parse($item->tgl_kunjungan)->format('d M') }}",
-                    bulan: "{{ \Carbon\Carbon::parse($item->tgl_kunjungan)->format('m') }}",
-                    tahun: "{{ \Carbon\Carbon::parse($item->tgl_kunjungan)->format('Y') }}",
-                    pax: {{ $item->jumlah_orang }}
+                label: "{{ \Carbon\Carbon::parse($item->tgl_kunjungan)->format('d M') }}",
+                pax: {{ $item->jumlah_orang }}
                 },
             @endforeach
         ];
 
-        const now = new Date();
-        const currentMonth = String(now.getMonth() + 1).padStart(2, '0');
-        const currentYear = String(now.getFullYear());
-
-        // 2. Inisialisasi Grafik Awal (Semua Data)
         let visitChart = new Chart(ctx, {
             type: 'line',
             data: {
@@ -198,46 +162,20 @@
                     backgroundColor: 'rgba(17, 122, 101, 0.1)',
                     borderWidth: 3,
                     fill: true,
-                    tension: 0.4,
-                    pointRadius: 4,
-                    pointBackgroundColor: '#1B4F72'
+                    tension: 0.4
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: { stepSize: 1 }
-                    }
-                },
                 plugins: {
-                    legend: { display: false }
+                    legend: {
+                        display: false
+                    }
                 }
             }
         });
-
-        // 3. Fungsi Filter saat Dropdown berubah
-        document.getElementById('filterChart').addEventListener('change', function () {
-            const val = this.value;
-            let filtered = [];
-
-            if (val === 'month') {
-                filtered = allData.filter(d => d.bulan === currentMonth && d.tahun === currentYear);
-            } else if (val === 'year') {
-                filtered = allData.filter(d => d.tahun === currentYear);
-            } else {
-                filtered = allData; // Keseluruhan
-            }
-
-            // Update Label dan Data di Chart
-            visitChart.data.labels = filtered.map(d => d.label);
-            visitChart.data.datasets[0].data = filtered.map(d => d.pax);
-            visitChart.update(); // Render ulang grafik dengan animasi
-        });
     </script>
-
 </body>
 
 </html>
